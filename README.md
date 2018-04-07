@@ -123,748 +123,163 @@ RBTree在理论上还是一棵BST树，但是它在对BST的插入和删除操�
 
 ### 旋转
 
-旋转操作(Rotate)的目的是使节点颜色符合定义，让RBTree的高度达到平衡。
-Rotate分为left-rotate（左旋）和right-rotate（右旋），区分左旋和右旋的方法是：待旋转的节点从左边上升到父节点就是右旋，待旋转的节点从右边上升到父节点就是左旋。
+Rotate分为left-rotate（左旋）和right-rotate（右旋）
 
-![BST remove](https://tech.meituan.com/img/redblack-tree/rotate-all.png)
+**注：网上可能有两种版本的旋转，请注意，以下全文均采用此处定义的旋转**
+
+#### 旋转规则：
+
+假设当前节点为 node
+
+##### 左旋：（node即为右图中的P)
+
+node节点的父节点变为node的右子树，node的右节点变为node的右子树的左子树，node节点的祖父节点的child节点（可能左可能右）变为node节点的右子树
+
+##### 右旋：（node即为左图中的Q)
+
+node节点的父节点变为node的左子树，node的左节点变为node的左子树的右子树，node节点的祖父节点的child节点（可能左可能右）变为node节点的左子树
+
+![Tree rotation.png](https://upload.wikimedia.org/wikipedia/commons/2/23/Tree_rotation.png)
 
 ### 查找
 
 RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找操作代码。
 
-### 插入
 
-因为每一个红黑树也是一个特化的[二叉查找树](https://zh.wikipedia.org/wiki/%E4%BA%8C%E5%8F%89%E6%9F%A5%E6%89%BE%E6%A0%91)，因此红黑树上的只读操作与普通[二叉查找树](https://zh.wikipedia.org/wiki/%E4%BA%8C%E5%8F%89%E6%9F%A5%E6%89%BE%E6%A0%91)上的只读操作相同。然而，在红黑树上进行插入操作和删除操作会导致不再匹配红黑树的性质。恢复红黑树的性质需要少量![{\displaystyle {\text{O}}(\log n)}](https://wikimedia.org/api/rest_v1/media/math/render/svg/67697a0b44080bbf967c00d60bf4aac79f9ce385)的颜色变更（实际是非常快速的）和不超过三次[树旋转](https://zh.wikipedia.org/wiki/%E6%A0%91%E6%97%8B%E8%BD%AC)（对于插入操作是两次）。虽然插入和删除很复杂，但操作时间仍可以保持为![{\displaystyle {\text{O}}(\log n)}](https://wikimedia.org/api/rest_v1/media/math/render/svg/67697a0b44080bbf967c00d60bf4aac79f9ce385)次。
+
+插入删除前言：
+
+在红黑树上进行插入操作和删除操作会导致不再匹配红黑树的性质。恢复红黑树的性质需要少量![{\displaystyle {\text{O}}(\log n)}](https://wikimedia.org/api/rest_v1/media/math/render/svg/67697a0b44080bbf967c00d60bf4aac79f9ce385)的颜色变更（实际是非常快速的）和不超过三次[树旋转](https://zh.wikipedia.org/wiki/%E6%A0%91%E6%97%8B%E8%BD%AC)（对于插入操作是两次）。虽然插入和删除很复杂，但操作时间仍可以保持为![{\displaystyle {\text{O}}(\log n)}](https://wikimedia.org/api/rest_v1/media/math/render/svg/67697a0b44080bbf967c00d60bf4aac79f9ce385)次。
+
+### 插入
 
 约定：新插入的节点初始都是**红色的** 。
 
-#### case 1
+#### 无须修复：
 
-新节点C位于树的**根**上，没有父节点
++ 新节点C位于树的**根**上，没有父节点
+
+  解决：
+
+  初始化根节点即可
+
++ 新节点的父节点B是黑色
+
+  解决：
+
+  直接插入即可，易得红黑树所有性质满足，因为新插入的节点为红色的，且与原树不冲突
+
+#### 需要修复：
+
+注：以下均采用父节点为祖父节点的左节点条件，若为右节点，则只需做镜像操作即可
+
+循环条件：需要修复的节点的父节点的颜色为RED
+
+##### case 1
+
+父节点B和叔父节点C二者都是红色
 
 解决：
 
-在这种情形下，我们把它**重绘为黑色**以满足性质2。因为它在每个路径上对黑节点数目增加一，性质5匹配。
-
-#### case 2
-
-新节点的父节点B是黑色
-
-解决：
-
-容易理解这时所有性质满足
-
-#### case 3
-
-父节点B和叔父节点U二者都是红色
-
-解决：
-
-将父节点和叔叔节点与祖父节点的颜色互换，这样就符合了RBTRee的定义。即维持了高度的平衡，修复后颜色也符合RBTree定义的第三条和第四条。下图中，操作完成后A节点变成了新的节点。**如果A节点的父节点不是黑色的话，则继续做修复操作（将A当做新加入的节点）。**
+将父节点和叔叔节点与祖父节点的颜色互换，即维持了局部的颜色**符合RBTree定义的第四条和第五条。下图中，操作完成后A节点变成了新的修复节点。**如果A节点的父节点不是黑色的，则继续做修复操作（将A当做新加入的节点）。（没有父节点的话，可以在循环外面加一句root->color = BLACK保证颜色正确）**
 ![插入修复case 1](https://tech.meituan.com/img/redblack-tree/insert-case1.png)
 
-#### case 4
+##### case 2
 
-父节点P是红色而叔父节点U是黑色或缺少，新节点C是其父节点B的左子节点，而父节点B又是其父节点A的左子节点
+父节点B是红色而叔父节点U是黑色(NIL节点也是黑色的)，新节点C是其父节点B的左子节点，而父节点B又是其父节点A的左子节点
 
 解决：
 
-将B节点进行右旋操作，并且和父节点A互换颜色。通过该修复操作RBTRee的高度和颜色都符合红黑树的定义。如果B和C节点都是右节点的话，只要将操作变成左旋就可以了。
+将祖父节点A节点进行右旋操作，并且和父节点B互换颜色。通过该修复操作RBTRee的高度和颜色都符合红黑树的定义。
 ![插入修复case 2](https://tech.meituan.com/img/redblack-tree/insert-case2.png)
 
-#### case 5
+##### case 3
 
-父节点B是红色而叔父节点U是黑色或缺少，新节点C是其父节点B的右子节点，而父节点B又是其父节点A的左子节点
+父节点B是红色而叔父节点U是黑色(NIL节点也是黑色的)，新节点C是其父节点B的右子节点(即一家三代不在一条线上)
 
 解决：
 
-将C节点进行左旋，这样就从case 5转换成case 4了，然后针对case 4进行操作处理就行了。case 4操作做了一个右旋操作和颜色互换来达到目的。如果树的结构是下图的镜像结构，则只需要将对应的左旋变成右旋，右旋变成左旋即可。
+将父节点B节点进行左旋，这样就从case 3转换成case 2了，然后针对case 2进行操作处理就行了。case 2操作做了一个右旋操作和颜色互换来达到目的。
 ![插入修复case 3](https://tech.meituan.com/img/redblack-tree/insert-case3.png)
 
-#### 插入操作的总结
+### 删除
 
-插入后的修复操作是一个向root节点回溯的操作，一旦牵涉的节点都符合了红黑树的定义，修复操作结束。之所以会向上回溯是由于case 3操作会将父节点，叔叔节点和祖父节点进行换颜色，有可能会导致祖父节点不平衡。这个时候需要对祖父节点为起点进行调节（向上回溯）。
+删除过程：
 
-祖父节点调节后如果还是遇到它的祖父颜色问题，操作就会继续向上回溯，直到root节点为止，根据定义root节点永远是黑色的。在向上的追溯的过程中，针对插入的5中情况进行调节。直到符合红黑树的定义为止。直到牵涉的节点都符合了红黑树的定义，修复操作结束。
++ 如果是叶子节点或者只有一个子节点就直接删除；
 
-### RBTree的删除操作
+  删除的图示：
 
-删除操作首先需要做的也是BST的删除操作，删除操作会删除对应的节点，如果是叶子节点就直接删除，如果是非叶子节点，会用对应的中序遍历的后继节点来顶替要删除节点的位置。删除后就需要做删除修复操作，使的树符合红黑树的定义，符合定义的红黑树高度是平衡的。
+  TODO
 
-删除修复操作在遇到被删除的节点是红色节点或者到达root节点时，修复操作完毕。
++ 如果有左右节点都有，会用右节点的最小节点（记为T）顶替要删除节点(记为N)的位置，即将N的value替换为T的value，之后删除T；
 
-**删除修复操作是针对删除黑色节点才有的，当黑色节点被删除后会让整个树不符合RBTree的定义的第四条。**需要做的处理是从兄弟节点上借调黑色的节点过来，如果兄弟节点没有黑节点可以借调的话，就只能往上追溯，将每一级的黑节点数减去一个，使得整棵树符合红黑树的定义。
++ 删除后，如果删除的节点的颜色为黑色就需要做删除修复操作，删除修复的主要思想就是从兄弟节点上**借调黑色的节点**过来，如果兄弟节点没有黑节点可以借调的话，就只能往上追溯，将每一级的黑节点数减去一个，使得整棵树符合红黑树的定义。
 
-删除操作的总体思想是从兄弟节点借调黑色节点使树保持局部的平衡，如果局部的平衡达到了，就看整体的树是否是平衡的，如果不平衡就接着向上追溯调整。
++ 删除修复操作在遇到被调整的节点是红色节点或者到达root节点时，修复操作完毕，**修复之后要将被调整的节点颜色变为黑色（主要防止以下case 2中父节点为红色的）**。
 
 删除修复操作分为四种情况(删除黑节点后)：
 
-1. 待删除的节点的兄弟节点是红色的节点。
-2. 待删除的节点的兄弟节点是黑色的节点，且兄弟节点的子节点都是黑色的。
-3. 待调整的节点的兄弟节点是黑色的节点，且兄弟节点的左子节点是红色的，右节点是黑色的(兄弟节点在右边)，如果兄弟节点在左边的话，就是兄弟节点的右子节点是红色的，左节点是黑色的。
-4. 待调整的节点的兄弟节点是黑色的节点，且右子节点是是红色的(兄弟节点在右边)，如果兄弟节点在左边，则就是对应的就是左节点是红色的。
+**注：待调整的节点的初始节点为删除节点的子节点（优先非空子节点），以下删除修复情况只讨论待调整的节点为左节点的情况，若为右节点，则只需做相应的镜像操作即可。**
+
+1. 待调整的节点的兄弟节点是红色的节点；
+2. 待调整的节点的兄弟节点是黑色的节点，且兄弟节点的子节点都是黑色的；
+3. 待调整的节点的兄弟节点是黑色的节点，且兄弟节点的左子节点是红色的，右节点是黑色的；
+4. 待调整的节点的兄弟节点是黑色的节点，且右子节点是是红色的；
+
+
+
+注：以下图示中待删除均修改为待调整
 
 #### case 1
 
-待删除的B的兄弟节点C是红色节点
+情况：待调整的B的兄弟节点C是红色节点
 
-解决：
+操作：交换此兄弟节点和父节点的颜色，再对待调整的节点的父节点A进行左旋
 
-由于兄弟节点是红色节点的时候，无法借调黑节点，所以需要将兄弟节点提升到父节点，同事调换此兄弟节点和父节点的颜色，由于兄弟节点是红色的，根据RBTree的定义，兄弟节点的子节点是黑色的，就可以从它的子节点借调了。
-
-case 1这样转换之后就会变成后面的case 2，case 3，或者case 4进行处理了。上升操作需要对C做一个左旋操作，如果是镜像结构的树只需要做对应的右旋操作即可。
-
-之所以要做case 1操作是因为兄弟节点是红色的，无法借到一个黑节点来填补删除的黑节点。
+解释：由于兄弟节点是红色节点，无法借调黑节点，所以需要将兄弟节点提升到父节点，由于兄弟节点是红色的，所以兄弟节点的子节点是黑色的，这样就可以从它的子节点借调黑节点了
 
 ![删除情况1](https://tech.meituan.com/img/redblack-tree/remove-case1.png)
 
 #### case 2
 
-待删除的B，兄弟节点C，及C的儿子都是黑色的
+情况：待调整的节点B，兄弟节点C，及C的两个儿子节点的颜色都是黑色的
 
-解决：
+操作：将兄弟节点颜色变为红色，同时将待调整的节点的父节点变为新的待调整的节点继续向上调整
 
-case 2的删除操作是由于兄弟节点可以消除一个黑色节点，因为兄弟节点和兄弟节点的子节点都是黑色的，所以可以将兄弟节点变红，这样就可以保证树的局部的颜色符合定义了。**这个时候需要将父节点A变成新的节点**，继续向上调整，直到整颗树的颜色符合RBTree的定义为止。
+解释：当将兄弟节点也变红之后，达到了局部的平衡了（由于原来计算定义的第五条的时候就是多了一个黑色节点的数量），但是对于祖父节点不一定满足条件，所以继续上溯
 
-case 2这种情况下之所以要将兄弟节点变红，是因为如果把兄弟节点借调过来，会导致兄弟的结构不符合RBTree的定义，这样的情况下只能是将兄弟节点也变成红色来达到颜色的平衡。当将兄弟节点也变红之后，达到了局部的平衡了，但是对于祖父节点来说是不符合定义4的。这样就需要回溯到父节点，接着进行修复操作。
 ![删除情况2](https://tech.meituan.com/img/redblack-tree/remove-case2.png)
 
 #### case 3
 
-待调整的B的兄弟节点C是黑色，C的左儿子是红色，C的右儿子是黑色
+情况：待调整的节点B的兄弟节点C是黑色，C的左儿子是红色，C的右儿子是黑色
 
-case 3的删除操作是一个中间步骤，它的目的是将左边的红色节点借调过来，这样就可以转换成case 4状态了，在case 4状态下可以将D，E节点都阶段过来，通过将两个节点变成黑色来保证红黑树的整体平衡。
+操作：交换兄弟节点的左儿子和兄弟节点的颜色，再对兄弟节点进行右旋
 
-之所以说case-3是一个中间状态，是因为根据红黑树的定义来说，下图并不是平衡的，他是通过case 2操作完后向上回溯出现的状态。之所以会出现case 3和后面的case 4的情况，是因为可以通过借用侄子节点的红色，变成黑色来符合红黑树定义4.
+解释：case 3的删除操作是一个中间步骤，目的是转换为case 4状态
+
 ![删除情况3](https://tech.meituan.com/img/redblack-tree/remove-case3.png)
 
 #### case 4
 
-待调整的B和它的兄弟节点D是黑色的，D的右儿子是红色的
+情况：待调整的B和它的兄弟节点D是黑色的，D的右儿子是红色的
 
-解决：
+解决：交换兄弟节点D和父节点A的颜色（防止父节点A为红色），再对父节点进行左旋即可
 
-Case 4的操作是真正的节点借调操作，通过将兄弟节点以及兄弟节点的右节点借调过来，并将兄弟节点的右子节点变成红色来达到借调两个黑节点的目的，这样的话，整棵树还是符合RBTree的定义的。
+解释：修复完成，整棵树还是符合红黑树的定义的，因为黑色节点的个数没有改变。
 
-Case 4这种情况的发生只有在待删除的节点的兄弟节点为黑，且子节点不全部为黑，才有可能借调到两个节点来做黑节点使用，从而保持整棵树都符合红黑树的定义。
 ![删除情况4](https://tech.meituan.com/img/redblack-tree/remove-case4.png)
 
-#### 删除操作的总结
+### RBTree的C语言实现
 
-红黑树的删除操作是最复杂的操作，复杂的地方就在于当删除了黑色节点的时候，如何从兄弟节点去借调节点，以保证树的颜色符合定义。由于红色的兄弟节点是没法借调出黑节点的，这样只能通过选择操作让他上升到父节点，而由于它是红节点，所以它的子节点就是黑的，可以借调。
-
-对于兄弟节点是黑色节点的可以分成3种情况来处理，当所以的兄弟节点的子节点都是黑色节点时，可以直接将兄弟节点变红，这样局部的红黑树颜色是符合定义的。但是整颗树不一定是符合红黑树定义的，**需要往上追溯继续调整**。
-
-对于兄弟节点的子节点为左红右黑或者 (全部为红，右红左黑)这两种情况，可以先将前面的情况通过选择转换为后一种情况，在后一种情况下，因为兄弟节点为黑，兄弟节点的右节点为红，可以借调出两个节点出来做黑节点，这样就可以保证删除了黑节点，整棵树还是符合红黑树的定义的，因为黑色节点的个数没有改变。
-
-红黑树的删除操作是遇到删除的节点为红色，或者追溯调整到了root节点，这时删除的修复操作完毕。
-
-### RBTree的Java实现
-
-```
-public class RBTreeNode<T extends Comparable<T>> {
-    private T value;//node value
-    private RBTreeNode<T> left;//left child pointer
-    private RBTreeNode<T> right;//right child pointer
-    private RBTreeNode<T> parent;//parent pointer
-    private boolean red;//color is red or not red
-
-    public RBTreeNode(){}
-    public RBTreeNode(T value){this.value=value;}
-    public RBTreeNode(T value,boolean isRed){this.value=value;this.red = isRed;}
-
-    public T getValue() {
-        return value;
-    }
-    void setValue(T value) {
-        this.value = value;
-    }
-    RBTreeNode<T> getLeft() {
-        return left;
-    }
-    void setLeft(RBTreeNode<T> left) {
-        this.left = left;
-    }
-    RBTreeNode<T> getRight() {
-        return right;
-    }
-    void setRight(RBTreeNode<T> right) {
-        this.right = right;
-    }
-    RBTreeNode<T> getParent() {
-        return parent;
-    }
-    void setParent(RBTreeNode<T> parent) {
-        this.parent = parent;
-    }
-    boolean isRed() {
-        return red;
-    }
-    boolean isBlack(){
-        return !red;
-    }
-    /**
-    * is leaf node
-    **/
-    boolean isLeaf(){
-        return left==null && right==null;
-    }
-
-    void setRed(boolean red) {
-        this.red = red;
-    }
-
-    void makeRed(){
-        red=true;
-    }
-    void makeBlack(){
-        red=false;
-    }
-    @Override
-    public String toString(){
-        return value.toString();
-    }
-}
-
-
-
-
-public class RBTree<T extends Comparable<T>> {
-    private final RBTreeNode<T> root;
-    //node number
-    private java.util.concurrent.atomic.AtomicLong size = 
-                    new java.util.concurrent.atomic.AtomicLong(0);
-
-    //in overwrite mode,all node's value can not  has same    value
-    //in non-overwrite mode,node can have same value, suggest don't use non-overwrite mode.
-    private volatile boolean overrideMode=true;
-
-    public RBTree(){
-        this.root = new RBTreeNode<T>();
-    }
-
-    public RBTree(boolean overrideMode){
-        this();
-        this.overrideMode=overrideMode;
-    }
-
-
-    public boolean isOverrideMode() {
-        return overrideMode;
-    }
-
-    public void setOverrideMode(boolean overrideMode) {
-        this.overrideMode = overrideMode;
-    }
-
-    /**
-     * number of tree number
-     * @return
-     */
-    public long getSize() {
-        return size.get();
-    }
-    /**
-     * get the root node
-     * @return
-     */
-    private RBTreeNode<T> getRoot(){
-        return root.getLeft();
-    }
-
-    /**
-     * add value to a new node,if this value exist in this tree,
-     * if value exist,it will return the exist value.otherwise return null
-     * if override mode is true,if value exist in the tree,
-     * it will override the old value in the tree
-     * 
-     * @param value
-     * @return
-     */
-    public T addNode(T value){
-        RBTreeNode<T> t = new RBTreeNode<T>(value);
-        return addNode(t);
-    }
-    /**
-     * find the value by give value(include key,key used for search,
-     * other field is not used,@see compare method).if this value not exist return null
-     * @param value
-     * @return
-     */
-    public T find(T value){
-        RBTreeNode<T> dataRoot = getRoot();
-        while(dataRoot!=null){
-            int cmp = dataRoot.getValue().compareTo(value);
-            if(cmp<0){
-                dataRoot = dataRoot.getRight();
-            }else if(cmp>0){
-                dataRoot = dataRoot.getLeft();
-            }else{
-                return dataRoot.getValue();
-            }
-        }
-        return null;
-    }
-    /**
-     * remove the node by give value,if this value not exists in tree return null
-     * @param value include search key
-     * @return the value contain in the removed node
-     */
-    public T remove(T value){
-        RBTreeNode<T> dataRoot = getRoot();
-        RBTreeNode<T> parent = root;
-
-        while(dataRoot!=null){
-            int cmp = dataRoot.getValue().compareTo(value);
-            if(cmp<0){
-                parent = dataRoot;
-                dataRoot = dataRoot.getRight();
-            }else if(cmp>0){
-                parent = dataRoot;
-                dataRoot = dataRoot.getLeft();
-            }else{
-                if(dataRoot.getRight()!=null){
-                    RBTreeNode<T> min = removeMin(dataRoot.getRight());
-                    //x used for fix color balance
-                    RBTreeNode<T> x = min.getRight()==null ? min.getParent() : min.getRight();
-                    boolean isParent = min.getRight()==null;
-
-                    min.setLeft(dataRoot.getLeft());
-                    setParent(dataRoot.getLeft(),min);
-                    if(parent.getLeft()==dataRoot){
-                        parent.setLeft(min);
-                    }else{
-                        parent.setRight(min);
-                    }
-                    setParent(min,parent);
-
-                    boolean curMinIsBlack = min.isBlack();
-                    //inherit dataRoot's color
-                    min.setRed(dataRoot.isRed());
-
-                    if(min!=dataRoot.getRight()){
-                        min.setRight(dataRoot.getRight());
-                        setParent(dataRoot.getRight(),min);
-                    }
-                    //remove a black node,need fix color
-                    if(curMinIsBlack){
-                        if(min!=dataRoot.getRight()){
-                            fixRemove(x,isParent);
-                        }else if(min.getRight()!=null){
-                            fixRemove(min.getRight(),false);
-                        }else{
-                            fixRemove(min,true);
-                        }
-                    }
-                }else{
-                    setParent(dataRoot.getLeft(),parent);
-                    if(parent.getLeft()==dataRoot){
-                        parent.setLeft(dataRoot.getLeft());
-                    }else{
-                        parent.setRight(dataRoot.getLeft());
-                    }
-                    //current node is black and tree is not empty
-                    if(dataRoot.isBlack() && !(root.getLeft()==null)){
-                        RBTreeNode<T> x = dataRoot.getLeft()==null 
-                                            ? parent :dataRoot.getLeft();
-                        boolean isParent = dataRoot.getLeft()==null;
-                        fixRemove(x,isParent);
-                    }
-                }
-                setParent(dataRoot,null);
-                dataRoot.setLeft(null);
-                dataRoot.setRight(null);
-                if(getRoot()!=null){
-                    getRoot().setRed(false);
-                    getRoot().setParent(null);
-                }
-                size.decrementAndGet();
-                return dataRoot.getValue();
-            }
-        }
-        return null;
-    }
-    /**
-     * fix remove action
-     * @param node
-     * @param isParent
-     */
-    private void fixRemove(RBTreeNode<T> node,boolean isParent){
-        RBTreeNode<T> cur = isParent ? null : node;
-        boolean isRed = isParent ? false : node.isRed();
-        RBTreeNode<T> parent = isParent ? node : node.getParent();
-
-        while(!isRed && !isRoot(cur)){
-            RBTreeNode<T> sibling = getSibling(cur,parent);
-            //sibling is not null,due to before remove tree color is balance
-
-            //if cur is a left node
-            boolean isLeft = parent.getRight()==sibling;
-            if(sibling.isRed() && !isLeft){//case 1
-                //cur in right
-                parent.makeRed();
-                sibling.makeBlack();
-                rotateRight(parent);
-            }else if(sibling.isRed() && isLeft){
-                //cur in left
-                parent.makeRed();
-                sibling.makeBlack();
-                rotateLeft(parent);
-            }else if(isBlack(sibling.getLeft()) && isBlack(sibling.getRight())){//case 2
-                sibling.makeRed();
-                cur = parent;
-                isRed = cur.isRed();
-                parent=parent.getParent();
-            }else if(isLeft && !isBlack(sibling.getLeft()) 
-                                    && isBlack(sibling.getRight())){//case 3
-                sibling.makeRed();
-                sibling.getLeft().makeBlack();
-                rotateRight(sibling);
-            }else if(!isLeft && !isBlack(sibling.getRight()) 
-                                            && isBlack(sibling.getLeft()) ){
-                sibling.makeRed();
-                sibling.getRight().makeBlack();
-                rotateLeft(sibling);
-            }else if(isLeft && !isBlack(sibling.getRight())){//case 4
-                sibling.setRed(parent.isRed());
-                parent.makeBlack();
-                sibling.getRight().makeBlack();
-                rotateLeft(parent);
-                cur=getRoot();
-            }else if(!isLeft && !isBlack(sibling.getLeft())){
-                sibling.setRed(parent.isRed());
-                parent.makeBlack();
-                sibling.getLeft().makeBlack();
-                rotateRight(parent);
-                cur=getRoot();
-            }
-        }
-        if(isRed){
-            cur.makeBlack();
-        }
-        if(getRoot()!=null){
-            getRoot().setRed(false);
-            getRoot().setParent(null);
-        }
-
-    }
-    //get sibling node
-    private RBTreeNode<T> getSibling(RBTreeNode<T> node,RBTreeNode<T> parent){
-        parent = node==null ? parent : node.getParent();
-        if(node==null){
-            return parent.getLeft()==null ? parent.getRight() : parent.getLeft();
-        }
-        if(node==parent.getLeft()){
-            return parent.getRight();
-        }else{
-            return parent.getLeft();
-        }
-    }
-
-    private boolean isBlack(RBTreeNode<T> node){
-        return node==null || node.isBlack();
-    }
-    private boolean isRoot(RBTreeNode<T> node){
-        return root.getLeft() == node && node.getParent()==null;
-    }
-    /**
-     * find the successor node
-     * @param node current node's right node
-     * @return
-     */
-    private RBTreeNode<T> removeMin(RBTreeNode<T> node){
-        //find the min node
-        RBTreeNode<T> parent = node;
-        while(node!=null && node.getLeft()!=null){
-            parent = node;
-            node = node.getLeft();
-        }
-        //remove min node
-        if(parent==node){
-            return node;
-        }
-
-        parent.setLeft(node.getRight());
-        setParent(node.getRight(),parent);
-
-        //don't remove right pointer,it is used for fixed color balance
-        //node.setRight(null);
-        return node;
-    }
-
-
-
-    private T addNode(RBTreeNode<T> node){
-        node.setLeft(null);
-        node.setRight(null);
-        node.setRed(true);
-        setParent(node,null);
-        if(root.getLeft()==null){
-            root.setLeft(node);
-            //root node is black
-            node.setRed(false);
-            size.incrementAndGet();
-        }else{
-            RBTreeNode<T> x = findParentNode(node);
-            int cmp = x.getValue().compareTo(node.getValue());
-
-            if(this.overrideMode && cmp==0){
-                T v = x.getValue();
-                x.setValue(node.getValue());
-                return v;
-            }else if(cmp==0){
-                //value exists,ignore this node
-                return x.getValue();
-            }
-
-            setParent(node,x);
-
-            if(cmp>0){
-                x.setLeft(node);
-            }else{
-                x.setRight(node);
-            }
-
-            fixInsert(node);
-            size.incrementAndGet();
-        }
-        return null;
-    }
-
-    /**
-     * find the parent node to hold node x,if parent value equals x.value return parent.
-     * @param x
-     * @return
-     */
-    private RBTreeNode<T> findParentNode(RBTreeNode<T> x){
-        RBTreeNode<T> dataRoot = getRoot();
-        RBTreeNode<T> child = dataRoot;
-
-        while(child!=null){
-            int cmp = child.getValue().compareTo(x.getValue());
-            if(cmp==0){
-                return child;
-            }
-            if(cmp>0){
-                dataRoot = child;
-                child = child.getLeft();
-            }else if(cmp<0){
-                dataRoot = child;
-                child = child.getRight();
-            }
-        }
-        return dataRoot;
-    }
-
-    /**
-     * red black tree insert fix.
-     * @param x
-     */
-    private void fixInsert(RBTreeNode<T> x){
-        RBTreeNode<T> parent = x.getParent();
-
-        while(parent!=null && parent.isRed()){
-            RBTreeNode<T> uncle = getUncle(x);
-            if(uncle==null){//need to rotate
-                RBTreeNode<T> ancestor = parent.getParent();
-                //ancestor is not null due to before before add,tree color is balance
-                if(parent == ancestor.getLeft()){
-                    boolean isRight = x == parent.getRight();
-                    if(isRight){
-                        rotateLeft(parent);
-                    }
-                    rotateRight(ancestor);
-
-                    if(isRight){
-                        x.setRed(false);
-                        parent=null;//end loop
-                    }else{
-                        parent.setRed(false);
-                    }
-                    ancestor.setRed(true);
-                }else{
-                    boolean isLeft = x == parent.getLeft();
-                    if(isLeft){
-                        rotateRight(parent);
-                    }
-                    rotateLeft(ancestor);
-
-                    if(isLeft){
-                        x.setRed(false);
-                        parent=null;//end loop
-                    }else{
-                        parent.setRed(false);
-                    }
-                    ancestor.setRed(true);
-                }
-            }else{//uncle is red
-                parent.setRed(false);
-                uncle.setRed(false);
-                parent.getParent().setRed(true);
-                x=parent.getParent();
-                parent = x.getParent();
-            }
-        }
-        getRoot().makeBlack();
-        getRoot().setParent(null);
-    }
-    /**
-     * get uncle node
-     * @param node
-     * @return
-     */
-    private RBTreeNode<T> getUncle(RBTreeNode<T> node){
-        RBTreeNode<T> parent = node.getParent();
-        RBTreeNode<T> ancestor = parent.getParent();
-        if(ancestor==null){
-            return null;
-        }
-        if(parent == ancestor.getLeft()){
-            return ancestor.getRight();
-        }else{
-            return ancestor.getLeft();
-        }
-    }
-
-    private void rotateLeft(RBTreeNode<T> node){
-        RBTreeNode<T> right = node.getRight();
-        if(right==null){
-            throw new java.lang.IllegalStateException("right node is null");
-        }
-        RBTreeNode<T> parent = node.getParent();
-        node.setRight(right.getLeft());
-        setParent(right.getLeft(),node);
-
-        right.setLeft(node);
-        setParent(node,right);
-
-        if(parent==null){//node pointer to root
-            //right  raise to root node
-            root.setLeft(right);
-            setParent(right,null);
-        }else{
-            if(parent.getLeft()==node){
-                parent.setLeft(right);
-            }else{
-                parent.setRight(right);
-            }
-            //right.setParent(parent);
-            setParent(right,parent);
-        }
-    }
-
-    private void rotateRight(RBTreeNode<T> node){
-        RBTreeNode<T> left = node.getLeft();
-        if(left==null){
-            throw new java.lang.IllegalStateException("left node is null");
-        }
-        RBTreeNode<T> parent = node.getParent();
-        node.setLeft(left.getRight());
-        setParent(left.getRight(),node);
-
-        left.setRight(node);
-        setParent(node,left);
-
-        if(parent==null){
-            root.setLeft(left);
-            setParent(left,null);
-        }else{
-            if(parent.getLeft()==node){
-                parent.setLeft(left);
-            }else{
-                parent.setRight(left);
-            }
-            setParent(left,parent);
-        }
-    }
-
-
-    private void setParent(RBTreeNode<T> node,RBTreeNode<T> parent){
-        if(node!=null){
-            node.setParent(parent);
-            if(parent==root){
-                node.setParent(null);
-            }
-        }
-    }
-    /**
-     * debug method,it used print the given node and its children nodes,
-     * every layer output in one line
-     * @param root
-     */
-    public void printTree(RBTreeNode<T> root){
-        java.util.LinkedList<RBTreeNode<T>> queue =new java.util.LinkedList<RBTreeNode<T>>();
-        java.util.LinkedList<RBTreeNode<T>> queue2 =new java.util.LinkedList<RBTreeNode<T>>();
-        if(root==null){
-            return ;
-        }
-        queue.add(root);
-        boolean firstQueue = true;
-
-        while(!queue.isEmpty() || !queue2.isEmpty()){
-            java.util.LinkedList<RBTreeNode<T>> q = firstQueue ? queue : queue2;
-            RBTreeNode<T> n = q.poll();
-
-            if(n!=null){
-                String pos = n.getParent()==null ? "" : ( n == n.getParent().getLeft() 
-                                                                        ? " LE" : " RI");
-                String pstr = n.getParent()==null ? "" : n.getParent().toString();
-                String cstr = n.isRed()?"R":"B";
-                cstr = n.getParent()==null ? cstr : cstr+" ";
-                System.out.print(n+"("+(cstr)+pstr+(pos)+")"+"\t");
-                if(n.getLeft()!=null){
-                    (firstQueue ? queue2 : queue).add(n.getLeft());
-                }
-                if(n.getRight()!=null){
-                    (firstQueue ? queue2 : queue).add(n.getRight());
-                }
-            }else{
-                System.out.println();
-                firstQueue = !firstQueue;
-            }
-        }
-    }
-
-
-    public static void main(String[] args) {
-        RBTree<String> bst = new RBTree<String>();
-        bst.addNode("d");
-        bst.addNode("d");
-        bst.addNode("c");
-        bst.addNode("c");
-        bst.addNode("b");
-        bst.addNode("f");
-
-        bst.addNode("a");
-        bst.addNode("e");
-
-        bst.addNode("g");
-        bst.addNode("h");
-
-
-        bst.remove("c");
-
-        bst.printTree(bst.getRoot());
-    }
-}
-
-```
-
-代码调试的时候，printTree输出格式如下:
-d(B)
-b(B d LE) g(R d RI)
-a(R b LE) e(B g LE) h(B g RI)
-f(R e RI)
-
-括号左边表示元素的内容。括号内的第一个元素表示颜色，B表示black，R表示red；第二个元素表示父元素的值；第三个元素表示左右，LE表示在父元素的左边。RI表示在父元素的右边。
-
-第一个元素d是root节点，由于它没有父节点，所以括号内只有一个元素。
+https://github.com/tofar/RBTree/blob/master/RBTree.c
 
 ## 总结
 
-作为平衡二叉查找树里面众多的实现之一，红黑树无疑是最简洁、实现最为简单的。红黑树通过引入颜色的概念，通过颜色这个约束条件的使用来保持树的高度平衡。作为平衡二叉查找树，旋转是一个必不可少的操作。通过旋转可以降低树的高度，在红黑树里面还可以转换颜色。
+红黑树通过引入颜色的概念，通过颜色这个约束条件的使用来保持树的高度平衡。作为平衡二叉查找树，旋转是一个必不可少的操作。通过旋转可以降低树的高度，在红黑树里面还可以转换颜色。
 
-红黑树里面的插入和删除的操作比较难理解，这时要注意记住一点：操作之前红黑树是平衡的，颜色是符合定义的。在操作的时候就需要向兄弟节点、父节点、侄子节点借调和互换颜色，要达到这个目的，就需要不断的进行旋转。所以红黑树的插入删除操作需要不停的旋转，一旦借调了别的节点，删除和插入的节点就会达到局部的平衡（局部符合红黑树的定义），但是被借调的节点就不会平衡了，这时就需要以被借调的节点为起点继续进行调整，直到整棵树都是平衡的。在整个修复的过程中，插入具体的分为3种情况，删除分为4种情况。
+红黑树里面的插入和删除的操作比较难理解，这时要注意记住一点：操作之前红黑树是平衡的，颜色是符合定义的。在操作的时候就需要向兄弟节点、父节点、侄子节点借调和互换颜色，要达到这个目的，就需要不断的进行旋转。所以红黑树的插入删除操作需要不停的旋转，一旦借调了别的节点，删除和插入的节点就会达到局部的平衡（局部符合红黑树的定义），但是被借调的节点就不会平衡了，这时就需要以被借调的节点为起点继续进行调整，直到整棵树都是平衡的。在整个修复的过程中，插入修复具体的分为3种情况，删除修复分为4种情况。
 
 整个红黑树的查找，插入和删除都是O(logN)的，原因就是整个红黑树的高度是logN，查找从根到叶，走过的路径是树的高度，删除和插入操作是从叶到根的，所以经过的路径都是logN。
 
@@ -874,8 +289,11 @@ f(R e RI)
 
 [红黑树深入剖析及Java实现](https://tech.meituan.com/redblack-tree.html) 
 
-演示链接：
+[红黑树-wikipedia](https://zh.wikipedia.org/zh-hans/%E7%BA%A2%E9%BB%91%E6%A0%91) 
+
+演示参照：
 
 [红黑树插入删除过程](https://www.jianshu.com/p/ad5d65e7ce62) 
 
-或者 [红黑树从头至尾插入和删除结点的全程演示图](https://blog.csdn.net/v_JULY_v/article/details/6284050)
+或者 [红黑树从头至尾插入和删除结点的全程演示图](https://blog.csdn.net/v_JULY_v/article/details/6284050) 
+
