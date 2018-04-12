@@ -1,5 +1,3 @@
-# 红黑树
-
 注：本文对网上一些博客进行详细与修正，并给出C语言实现
 
 
@@ -11,7 +9,7 @@
 二叉查找树（Binary Search Tree，简称BST）是一棵二叉树，它的左子节点的值比父节点的值要小，右节点的值要比父节点的值大。它的高度决定了它的查找效率。
 
 在理想的情况下，二叉查找树增删查改的时间复杂度为O(logN)（其中N为节点数），最坏的情况下为O(N)。当它的高度为logN+1时，我们就说二叉查找树是平衡的。
-![BST](https://tech.meituan.com/img/redblack-tree/tree-all.png)
+![BST](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e3c36b41a?w=492&h=294&f=png&s=32276)
 
 ### 查找
 
@@ -96,7 +94,7 @@ BiTNode Insert(BiTNode root, int x)
 2. 如果待删除的节点是叶子节点，则直接删除。
 3. 如果待删除的节点不是叶子节点，则先找到待删除节点的右节点的最小节点，用该最小节点的值替换待删除的节点的值，然后删除这个最小节点。
 
-![BST remove](https://tech.meituan.com/img/redblack-tree/bst-tree-remove.png)
+![BST remove](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e3c2ce986?w=840&h=399&f=png&s=78045)
 
 ### BST存在的问题
 
@@ -137,7 +135,7 @@ RBTree在理论上还是一棵BST树，但是它在对BST的插入和删除操�
 
 图例：
 
-![An example of a red-black tree](https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Red-black_tree_example.svg/450px-Red-black_tree_example.svg.png)
+![An example of a red-black tree](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e973c17c9?w=450&h=217&f=png&s=12834)
 
 ### 旋转
 
@@ -157,7 +155,7 @@ node节点的父节点变为node的右子树，node的右节点变为node的右�
 
 node节点的父节点变为node的左子树，node的左节点变为node的左子树的右子树，node节点的祖父节点的child节点（可能左可能右）变为node节点的左子树
 
-![Tree rotation.png](https://upload.wikimedia.org/wikipedia/commons/2/23/Tree_rotation.png)
+![Tree rotation.png](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e693c97fb?w=612&h=241&f=png&s=30878)
 
 ### 查找
 
@@ -167,7 +165,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 插入删除前言：
 
-在红黑树上进行插入操作和删除操作会导致不再匹配红黑树的性质。恢复红黑树的性质需要少量![{\displaystyle {\text{O}}(\log n)}](https://wikimedia.org/api/rest_v1/media/math/render/svg/67697a0b44080bbf967c00d60bf4aac79f9ce385)的颜色变更（实际是非常快速的）和不超过三次[树旋转](https://zh.wikipedia.org/wiki/%E6%A0%91%E6%97%8B%E8%BD%AC)（对于插入操作是两次）。虽然插入和删除很复杂，但操作时间仍可以保持为![{\displaystyle {\text{O}}(\log n)}](https://wikimedia.org/api/rest_v1/media/math/render/svg/67697a0b44080bbf967c00d60bf4aac79f9ce385)次。
+在红黑树上进行插入操作和删除操作会导致不再匹配红黑树的性质。恢复红黑树的性质需要少量![{\displaystyle {\text{O}}(\log n)}](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e76c7e994)的颜色变更（实际是非常快速的）和不超过三次[树旋转](https://zh.wikipedia.org/wiki/%E6%A0%91%E6%97%8B%E8%BD%AC)（对于插入操作是两次）。虽然插入和删除很复杂，但操作时间仍可以保持为![{\displaystyle {\text{O}}(\log n)}](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e76c7e994)次。
 
 ### 插入
 
@@ -196,7 +194,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 操作：将父节点和叔叔节点与祖父节点的颜色互换，即维持了局部的颜色**符合RBTree定义的第四条和第五条。下图中，操作完成后A节点变成了新的修复节点。**如果A节点的父节点不是黑色的，则继续做修复操作（将A当做新加入的节点）。（没有父节点的话，可以在循环外面加一句root->color = BLACK保证颜色正确）
 
-![插入修复case 1](https://tech.meituan.com/img/redblack-tree/insert-case1.png)
+![插入修复case 1](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e3d842880?w=847&h=348&f=png&s=62719)
 
 ##### case 2
 
@@ -204,7 +202,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 操作：将祖父节点A节点进行右旋操作，并且和父节点B互换颜色。通过该修复操作RBTRee的高度和颜色都符合红黑树的定义。
 
-![插入修复case 2](https://tech.meituan.com/img/redblack-tree/insert-case2.png)
+![插入修复case 2](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e461a12e8?w=453&h=218&f=png&s=25637)
 
 ##### case 3
 
@@ -212,7 +210,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 操作：将父节点B节点进行左旋，这样就从case 3转换成case 2了，然后针对case 2进行操作处理就行了。case 2操作做了一个右旋操作和颜色互换来达到目的。
 
-![插入修复case 3](https://tech.meituan.com/img/redblack-tree/insert-case3.png)
+![插入修复case 3](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e6b0c8387?w=546&h=247&f=png&s=38620)
 
 ### 删除
 
@@ -251,7 +249,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 解释：由于兄弟节点是红色节点，无法借调黑节点，所以需要将兄弟节点提升到父节点，由于兄弟节点是红色的，所以兄弟节点的子节点是黑色的，这样就可以从它的子节点借调黑节点了
 
-![删除情况1](https://tech.meituan.com/img/redblack-tree/remove-case1.png)
+![删除情况1](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e6e5c7f42?w=536&h=239&f=png&s=38928)
 
 #### case 2
 
@@ -261,7 +259,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 解释：当将兄弟节点也变红之后，达到了局部的平衡了（由于原来计算定义的第五条的时候就是多了一个黑色节点的数量），但是对于祖父节点不一定满足条件，所以继续上溯
 
-![删除情况2](https://tech.meituan.com/img/redblack-tree/remove-case2.png)
+![删除情况2](https://user-gold-cdn.xitu.io/2018/4/7/1629ff4e6fab9725?w=546&h=246&f=png&s=36773)
 
 #### case 3
 
@@ -271,17 +269,19 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 解释：case 3的删除操作是一个中间步骤，目的是转换为case 4状态
 
-![删除情况3](https://tech.meituan.com/img/redblack-tree/remove-case3.png)
+
+![](https://user-gold-cdn.xitu.io/2018/4/12/162b8e49d39b5753?w=987&h=432&f=png&s=40497)
 
 #### case 4
 
 情况：待调整的B和它的兄弟节点D是黑色的，D的右儿子是红色的
 
-操作：交换兄弟节点D和父节点A的颜色（防止父节点A为红色），再对父节点进行左旋即可，再将兄弟节点的右子树变黑
+解决：交换兄弟节点D和父节点A的颜色（防止父节点A为红色），再对父节点进行左旋，最后将原来兄弟节点的右节点变黑即可
 
 解释：修复完成，整棵树还是符合红黑树的定义的，因为黑色节点的个数没有改变。
 
-![删除情况4](https://tech.meituan.com/img/redblack-tree/remove-case4.png)
+![](https://user-gold-cdn.xitu.io/2018/4/12/162b8e69e9ae5b80?imageView2/2/w/480/h/480/q/85/interlace/1)
+
 
 ### RBTree的C语言实现
 
