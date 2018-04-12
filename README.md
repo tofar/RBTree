@@ -24,23 +24,24 @@
 直到当前节点指针为空或者查找到对应的节点，程序查找结束。
 
 ```c
-//查找某一个值  
-//返回1表示找到该值，返回0表示没有找到  
-BiTTree SearchValue(BiTree T,int x)
-{  
-    if (T == NULL) 
-        return NULL;  
-    else
-    {  
-        if (x < T->data) 
-            SearchValue(T->lChild, x);  
-        else if (x > T->data)
-            SearchValue(T->rChild, x);  
+//查找某一个值
+BiTNode SearchValue(BiTNode root, int x)
+{
+    if (root == NULL)
+        return NULL;
+
+    BiTNode current = root;
+    while (current != NULL)
+    {
+        if (x < current->value)
+            current = current->left;
+        else if (x > current->value)
+            current = current->right;
         else
-            return T;  
-    }  
-    return NULL;  
-}  
+            return current;
+    }
+    return NULL;
+}
 ```
 
 ### 插入
@@ -48,30 +49,43 @@ BiTTree SearchValue(BiTree T,int x)
 插入操作先通过循环查找到待插入的节点的父节点，和查找父节点的逻辑一样，都是比大小，小的往左，大的往右。找到父节点后，对比父节点，小的就插入到父节点的左节点，大就插入到父节点的右节点上。
 
 ```c
-//插入节点  
-void Insert(BiTree *T,int x)
-{  
-    BiTNode *pInsert = (BiTNode *)malloc(sizeof(BiTNode));  
-    pInsert->data = x;  
-    pInsert->lChild = NULL;  
-    pInsert->rChild = NULL;  
-  
-    if ((*T) == NULL) 
-        *T = pInsert;  
-  
-    if ((*T)->lChild == NULL && x < (*T)->data) 
-        (*T)->lChild = pInsert;  
-  
-    if ((*T)->rChild == NULL && x > (*T)->data) 
-        (*T)->rChild = pInsert;  
-
-    if (x < (*T)->data) 
-        Insert(&(*T)->lChild, x);  
-  
-    if (x > (*T)->data) 
-        Insert(&(*T)->rChild, x);  
-    return;  
-} 
+//插入节点
+BiTNode Insert(BiTNode root, int x)
+{
+    BiTNode node = (BiTNode)malloc(sizeof(struct BiTree));
+    node->value = x;
+    if ((root) == NULL)
+    {
+        return node;
+    }
+    BiTNode current = root;
+    while (current != NULL)
+    {
+        if (current->value == x)
+        {
+            break;
+        }
+        else if (current->value > x)
+        {
+            if (current->left == NULL)
+            {
+                current->left = node;
+                break;
+            }
+            current = current->left;
+        }
+        else
+        {
+            if (current->right == NULL)
+            {
+                current->right = node;
+                break;
+            }
+            current = current->right;
+        }
+    }
+    return root;
+}
 ```
 
 ### 删除
@@ -263,7 +277,7 @@ RBTree的查找操作和BST的查找操作是一样的。请参考BST的查找�
 
 情况：待调整的B和它的兄弟节点D是黑色的，D的右儿子是红色的
 
-解决：交换兄弟节点D和父节点A的颜色（防止父节点A为红色），再对父节点进行左旋即可
+操作：交换兄弟节点D和父节点A的颜色（防止父节点A为红色），再对父节点进行左旋即可，再将兄弟节点的右子树变黑
 
 解释：修复完成，整棵树还是符合红黑树的定义的，因为黑色节点的个数没有改变。
 

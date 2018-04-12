@@ -347,7 +347,7 @@ void fixRemove(RBTree *root, RBTree node)
             }
             else
             {
-                //case 4 brotther的右子树为红色
+                //case 4 brother的右子树为红色
                 brother->color = node->parent->color;
                 node->parent->color = BLACK;
                 brother->right->color = BLACK;
@@ -372,7 +372,7 @@ void fixRemove(RBTree *root, RBTree node)
                 brother->color = RED;
                 node = node->parent;
             }
-            else if (brother->left->color == BLACK)
+            else if (brother->right->color == RED)
             { //case 3
                 brother->color = RED;
                 brother->right->color = BLACK;
